@@ -1,0 +1,9 @@
+<Project>
+  <Target Name="Configure" BeforeTargets="Build">
+    <Configure EnvFile="$(EnvFile)" Overwrite="$(Overwrite)">
+      <Output TaskParameter="Configuration" ItemName="Configuration" />
+    </Configure>
+    <Database />
+    <GitInit />
+  </Target>
+</Project>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+	  <!-- <USSoftworks.TaskDirectory>$(MSBuildThisFileDirectory)..\tasks</USSoftworks.TaskDirectory> -->
+    <USSoftworksTaskDirectory>$(MSBuildThisFileDirectory)..\bin\Debug\net8.0</USSoftworksTaskDirectory>
+    <USSoftworksTaskAssembly>$(USSoftworksTaskDirectory)\$(MSBuildThisFileName).dll</USSoftworksTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="$(MSBuildThisFileName).Configure"     AssemblyFile="$(USSoftworksTaskAssembly)" />
+  <UsingTask TaskName="$(MSBuildThisFileName).Database"      AssemblyFile="$(USSoftworksTaskAssembly)" />
+  <UsingTask TaskName="$(MSBuildThisFileName).GitInit"       AssemblyFile="$(USSoftworksTaskAssembly)" />
+
+  <!-- Tasks for deploying Kudu web applications and listening for events -->
+  <UsingTask TaskName="$(MSBuildThisFileName).KuduZipDeploy" AssemblyFile="$(USSoftworksTaskAssembly)" />
+
+  <UsingTask TaskName="$(MSBuildThisFileName).TailwindExec"  AssemblyFile="$(USSoftworksTaskAssembly)" />
+  <UsingTask TaskName="$(MSBuildThisFileName).SendEmail" AssemblyFile="$(USSoftworksTaskAssembly)" />
+  <UsingTask TaskName="$(MSBuildThisFileName).TaskItemsFromFlatArray" AssemblyFile="$(USSoftworksTaskAssembly)" />
+</Project>

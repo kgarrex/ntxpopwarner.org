@@ -1,0 +1,19 @@
+@page
+@model AuthModel
+
+<div id="sign-in" class="flex basis-1/2 justify-end h-6 m-y-2 bg-purple-400">
+  <form asp-page="/" class="flex h-8">
+    <div class="h-full mx-2">
+      <label asp-for="Input.Username" class="inline-block text-white text-sm font-bold font-sans italic mx-2"></label>
+      <input asp-for="Input.Username" class="text-sm appearance-none font-bold font-sans rounded" />
+    </div>
+    <div class="h-full mx-2">
+      <label asp-for="Input.Password" class="inline-block text-white text-sm font-bold font-sans italic mx-2"></label>
+      <input asp-for="Input.Password" class="text-sm appreance-none font-bold font-sans rounded" />
+    </div>
+    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-2 rounded" />
+      SignIn
+    </button>
+  </form>
+</div>
+

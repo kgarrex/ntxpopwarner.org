@@ -1,0 +1,115 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <Title>BuildTools</Title>
+    <Authors>Ken Garrett</Authors>
+    <Description>A build library for MSBuild</Description>
+    <Company>US Softworks</Company>
+    <Copyright></Copyright>
+    <PackageId>USSoftworks.Build</PackageId>
+    <Version>1.0.0</Version>
+    <PackageVersion>1.0</PackageVersion>
+    <PackageTags></PackageTags>
+    <IsPackable>true</IsPackable>
+    <PackRelease>true</PackRelease>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- Tell the SDK to generate a deps.json file -->
+    <GenerateDependencyFile>true</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <OutputType>Library</OutputType>
+    <!-- <OutputPath></OutputPath> -->
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+  </PropertyGroup>
+
+  <!-- https://learn.microsoft.com/en-us/visualstudio/msbuild/
+       tutorial-custom-task-code-generation?view=vs-2022#bundle-dependencies-into-the-package -->
+  <PropertyGroup>
+    <!-- This target will run when MSBuild is collecting the files to be packaged, and we'll implement it below.
+         This property controls the dependency list for this packaging process, so by adding our custom property
+         we hook ourselves into the process in a supported way. -->
+    <TargetsForTfmSpecificBuildOutput>
+      $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
+    </TargetsForTfmSpecificBuildOutput>
+    <!-- This property tells MSBuild where the root folder of the package's build assets should be.
+         Because we are not a library package, we should not pack to 'lib'. Instead, we choose 'tasks' by convention. -->
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <!-- NuGet does validation that libraries in a package are exposed as dependencies, be we explicitly do not want
+         that behavior for MSBuild task. They are isolated by design. Therefore we ignore this specific warning. -->
+    <NoWarn>NU5100</NoWarn>
+    <!-- Supress NuGet warning NU5128. -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PrivateAssets Condition="'$(PrivateAssets)' == ''">none</PrivateAssets>
+    <ExcludeAssets Condition="'$(ExcludeAssets)' == ''">none</ExcludeAssets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.10.4" PrivateAssets="all" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.10.4" PrivatteAssets="all" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="fasterflect" Version="3.0.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="DotNetEnv" Version="3.0.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="Libgit2Sharp" Version="0.30.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="Spectre.Console" Version="0.49.2-preview.0.7" PrivateAssetes="$(PrivateAssets)" ExludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="MailKit" Version="4.6.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+    <PackageReference Include="MimeKit" Version="4.6.0" PrivateAssets="$(PrivateAssets)" ExcludeAssets="$(ExcludeAssets)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- these lines pack the build props/targets files to the `build` folder in the generated package.
+        by convention, the .NET SDK will look for build\<Package Id>.props and build\<Package Id>.targets
+        for automatic inclusion in the build. -->
+    <Content Include="build\$(PackageId).props" PackagePath="build\" />
+    <Content Include="build\$(PackageId).targets" PackagePath="build\" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <ItemGroup>
+    <Using Include="Microsoft.Build.Framework" />
+    <Using Include="Microsoft.Build.Utilities" />
+  </ItemGroup>
+
+  <!-- This is the target we defined above. It's purpose is to add all of our
+       PackageReference and ProjectReference's runtime assets to our package output. -->
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <!-- The TargetPath is the path inside the package that the source file will be placed.
+           This is already precomputed in the ReferenceCopyLocalPaths items' DestinationSubPath, so resue it here. -->
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" TargetPath="%(ReferenceCopyLocalPaths.DestinationPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- This target adds the generated deps.json file to our package output. -->
+  <Target
+    Name="AddBuildDependencyFileToBuiltProjectOutputGroupOutput"
+    BeforeTargets="BuiltProjectOutputGroup"
+    Condition="'$(GenerateDependencyFile)' == 'true'">
+
+    <ItemGroup>
+      <BuiltProjectOutputGroupOutput Inclue="$(ProjectDepsFilePath)" TargetPath="$(ProjectDepsFileName)" FinalOutputPath="$(ProjectDepsFilePath)" />
+    </ItemGroup>
+  </Target>
+</Project>
