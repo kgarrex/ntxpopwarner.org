@@ -10,6 +10,8 @@ public partial class ContactModel : PublicPageModel
   private readonly ILogger<ContactModel> _logger;
   private readonly IEmailService _emailService;
 
+  public bool Success { get; set; } = false;
+
   [BindProperty]
   public InputModel Input { get; set; }
   public ContactModel(ILogger<ContactModel> logger, IEmailService emailService) : base()
@@ -25,8 +27,11 @@ public partial class ContactModel : PublicPageModel
     Message = "Contact form:\n\t{Email}\n\t{Subject}\n\t{Message}")]
   private partial void LogContactForm(string email, string subject, string message);
 
-  public void OnPost()
+  public IActionResult OnPost()
   {
+    if(!ModelState.IsValid)
+    {
+    }
     LogContactForm(Input.Email, Input.Subject, Input.Message);
     string emailFormat = "Sender: {0}\n\nMessage: {1}"; 
     _emailService.SendTextEmail(new Email
@@ -35,6 +40,8 @@ public partial class ContactModel : PublicPageModel
       Subject = Input.Subject,
       TextBody = String.Format(emailFormat, Input.Email, Input.Message),
     });
+    Success = true;
+    return Page();
   }
 
   public partial class InputModel 
